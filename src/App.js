@@ -15,12 +15,18 @@ function App() {
   const [time, setTime] = React.useState(getLimit());
   const [timerId, setTimerId] = React.useState(null);
 
+  const stopTimer = React.useCallback(() => {
+    clearInterval(timerId);
+    setTimerId(null);
+    setTime(getLimit());
+  }, [timerId]);
+
   React.useEffect(() => {
     if (time <= 0) {
       stopTimer();
       notification();
     }
-  }, [time]);
+  }, [time, stopTimer]);
 
   const notification = () => {
     audioPlayer.current.play();
@@ -35,12 +41,6 @@ function App() {
       setTime((t) => t - STEP);
     }, STEP);
     setTimerId(id);
-  }
-
-  const stopTimer = () => {
-    clearInterval(timerId);
-    setTimerId(null);
-    setTime(getLimit());
   }
 
   const value = `${moment.duration(time).minutes()} : ${moment.duration(time).seconds()}`;
