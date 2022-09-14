@@ -1,23 +1,62 @@
-import logo from './logo.svg';
+import React from 'react';
+import moment from 'moment';
 import './App.css';
+import NotificationSound from "./notification-sound.mp3";
+
+function getLimit() {
+  return 1000 * 60 * 40;
+};
+
+const STEP = 1000;
+const message = `${getLimit() / (1000 * 60)} минут прошло. Встань!`;
 
 function App() {
+  const audioPlayer = React.useRef(null);
+  const [time, setTime] = React.useState(getLimit());
+  const [timerId, setTimerId] = React.useState(null);
+
+  React.useEffect(() => {
+    if (time <= 0) {
+      stopTimer();
+      notification();
+    }
+  }, [time]);
+
+  const notification = () => {
+    audioPlayer.current.play();
+    alert(message);
+  }
+
+  const startTimer = () => {
+    if (timerId) {
+      return;
+    }
+    const id = setInterval(() => {
+      setTime((t) => t - STEP);
+    }, STEP);
+    setTimerId(id);
+  }
+
+  const stopTimer = () => {
+    clearInterval(timerId);
+    setTimerId(null);
+    setTime(getLimit());
+  }
+
+  const value = `${moment.duration(time).minutes()} : ${moment.duration(time).seconds()}`;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container'>
+      <div className='flex-container'>
+        <div>
+          {value}
+        </div>
+        <div className='button-container'>
+          <button type='button' className='button' onClick={startTimer}>START</button>
+          <button type='button' className='button' onClick={stopTimer}>STOP</button>
+        </div>
+        <audio ref={audioPlayer} src={NotificationSound} />
+      </div>
     </div>
   );
 }
